@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <!--  首页布局-->
+    <!--  布局-->
     <el-container class="page-container">
       <!-- 顶部-->
       <el-header class="page-header">
