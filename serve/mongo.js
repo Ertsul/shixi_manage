@@ -17,13 +17,9 @@ class MyMongo {
           reject({
             type: 0
           });
-          // return;
         }
-        console.log('============================');
-        console.log('数据库连接成功');
-        console.log('============================');
+        console.log('============================\t数据库连接成功');
         this.db = client.db(this.dbName);
-        // console.log('============', this.db);
         resolve({
           type: 1
         });
@@ -31,11 +27,19 @@ class MyMongo {
     });
   }
 
+  // 关闭数据库连接
+  close() {
+    console.log('============================\t数据库连接关闭');
+    this.db.close();
+  }
+
   // // 插入数据库
   async insert(colName, value) {
     return new Promise(async (resolve, reject) => {
       const col = this.db.collection(colName);
       col.insertOne(value, (err, result) => {
+        // this.db.close();
+        this.close();
         if (err) {
           reject({
             errcode: 0
@@ -52,35 +56,29 @@ class MyMongo {
   // 查找数据库
   async find(colName, params) {
     return new Promise(async (resolve, reject) => {
-      // console.log('------------', this.db);
       const col = this.db.collection(colName);
-      col.find(params).toArray((err, res) => {
-        if (err) {
-          reject({});
-        } else {
-          resolve(res);
-        }
-      })
-      // if (params.page && params.size) {
-      //   const {page, size} = params;
-      //   delete params.page;
-      //   delete params.size;
-      //   col.find(params).skip((page - 1) * size).limit(size).toArray((err, res) => {
-      //     if (err) {
-      //       reject({});
-      //     } else {
-      //       resolve(res);
-      //     }
-      //   })
-      // } else {
-      //   col.find(params).toArray((err, res) => {
-      //     if (err) {
-      //       reject({});
-      //     } else {
-      //       resolve(res);
-      //     }
-      //   })
-      // }
+      if (params.page && params.size) { // 分页查询
+        const {page, size} = params;
+        delete params.page;
+        delete params.size;
+        col.find(params).skip((page - 1) * size).limit(size).toArray((err, res) => {
+          // this.close();
+          if (err) {
+            reject({});
+          } else {
+            resolve(res);
+          }
+        })
+      } else {
+        col.find(params).toArray((err, res) => {
+          // this.close();
+          if (err) {
+            reject({});
+          } else {
+            resolve(res);
+          }
+        })
+      }
     })
   }
 }
