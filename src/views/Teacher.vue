@@ -60,7 +60,98 @@
           name: '',
           college: '',
           class: ''
-        }
+        },
+        searchResult: [ // 搜索结果
+          // {
+          //   name: '姓名', // 姓名
+          //   studentId: '学号', // 学号
+          //   myPhone: '个人电话', // 个人电话
+          //   companyName: '公司名称', // 公司名称
+          //   department: '所在部门', // 所在部门
+          //   charger: '负责人', // 负责人
+          //   chargerPhone: '负责人电话', // 负责人电话
+          //   address: '公司地址', // 公司地址 }
+          {
+            name: '姓名1', // 姓名
+            studentId: '学号1', // 学号
+            myPhone: '个人电话1', // 个人电话
+            companyName: '公司名称1', // 公司名称
+            department: '所在部门1', // 所在部门
+            charger: '负责人1', // 负责人
+            chargerPhone: '负责人电话1', // 负责人电话
+            address: '公司地址1', // 公司地址
+          },
+          {
+            name: '姓名1', // 姓名
+            studentId: '学号1', // 学号
+            myPhone: '个人电话1', // 个人电话
+            companyName: '公司名称1', // 公司名称
+            department: '所在部门1', // 所在部门
+            charger: '负责人1', // 负责人
+            chargerPhone: '负责人电话1', // 负责人电话
+            address: '公司地址1', // 公司地址
+          },
+          {
+            name: '姓名1', // 姓名
+            studentId: '学号1', // 学号
+            myPhone: '个人电话1', // 个人电话
+            companyName: '公司名称1', // 公司名称
+            department: '所在部门1', // 所在部门
+            charger: '负责人1', // 负责人
+            chargerPhone: '负责人电话1', // 负责人电话
+            address: '公司地址1', // 公司地址
+          },
+          {
+            name: '姓名1', // 姓名
+            studentId: '学号1', // 学号
+            myPhone: '个人电话1', // 个人电话
+            companyName: '公司名称1', // 公司名称
+            department: '所在部门1', // 所在部门
+            charger: '负责人1', // 负责人
+            chargerPhone: '负责人电话1', // 负责人电话
+            address: '公司地址1', // 公司地址
+          },
+          {
+            name: '姓名1', // 姓名
+            studentId: '学号1', // 学号
+            myPhone: '个人电话1', // 个人电话
+            companyName: '公司名称1', // 公司名称
+            department: '所在部门1', // 所在部门
+            charger: '负责人1', // 负责人
+            chargerPhone: '负责人电话1', // 负责人电话
+            address: '公司地址1', // 公司地址
+          },
+          {
+            name: '姓名1', // 姓名
+            studentId: '学号1', // 学号
+            myPhone: '个人电话1', // 个人电话
+            companyName: '公司名称1', // 公司名称
+            department: '所在部门1', // 所在部门
+            charger: '负责人1', // 负责人
+            chargerPhone: '负责人电话1', // 负责人电话
+            address: '公司地址1', // 公司地址
+          },
+          {
+            name: '姓名1', // 姓名
+            studentId: '学号1', // 学号
+            myPhone: '个人电话1', // 个人电话
+            companyName: '公司名称1', // 公司名称
+            department: '所在部门1', // 所在部门
+            charger: '负责人1', // 负责人
+            chargerPhone: '负责人电话1', // 负责人电话
+            address: '公司地址1', // 公司地址
+          },
+          {
+            name: '姓名1', // 姓名
+            studentId: '学号1', // 学号
+            myPhone: '个人电话1', // 个人电话
+            companyName: '公司名称1', // 公司名称
+            department: '所在部门1', // 所在部门
+            charger: '负责人1', // 负责人
+            chargerPhone: '负责人电话1', // 负责人电话
+            address: '公司地址1', // 公司地址
+          },
+        ]
       }
     }
   }
