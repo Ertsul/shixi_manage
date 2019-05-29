@@ -22,10 +22,10 @@ const myMongo = new MyMongo(MongoClient, dbHost, dbName);
 //     // findRes.then(res => {
 //     //   console.log('find -- ', res);
 //     // })
-//     // 数据库插入测试
-//     /*const insertRes = myMongo.insert('student', {
+//     // 数据库插入测试', {
 //       name: 'Ertsul', // 姓名
 //       studentId: '002', // 学号
+//     /*const insertRes = myMongo.insert('student
 //       myPhone: '13645896271', // 个人电话
 //       companyName: 'DarkRoom', // 公司名称
 //       department: '开发部', // 所在部门
@@ -52,7 +52,7 @@ router.post('/studentList', async (ctx, next) => {
   const {type} = dbConnectType;
   if (type) {
     const params = ctx.request.body;
-    const findRes = await myMongo.find('student', params);
+    const findRes = await myMongo.find('studentInfo', params);
     if (findRes) {
       ctx.body = findRes;
       next();
@@ -60,8 +60,56 @@ router.post('/studentList', async (ctx, next) => {
   }
 });
 
+// 注册
+router.post('/register', async (ctx, next) => {
+  console.log('---------', ctx.request.body);
+  next();
+  // const dbConnectType = await myMongo.connect();
+  // const {type} = dbConnectType;
+  // if (type) {
+  //   const params = ctx.request.body;
+  //   const {type, name, studentId, password, college, clas} = params;
+  //   const isFullInfo = name && studentId && password && college && clas; // 判断信息填写完整
+  //   // console.log('isFullInfoisFullInfo', isFullInfo, params,ctx.request, ctx.request.body);
+  //   if (!isFullInfo) {
+  //     ctx.body = {
+  //       type: 0,
+  //       msg: 'msg exit null'
+  //     };
+  //     return;
+  //   }
+  //   // 判断注册的类型：1 学生 2 辅导员 3 学生处
+  //   if (type === 1) {
+  //     const params = {
+  //       name,
+  //       studentId,
+  //       password,
+  //       college,
+  //       clas,
+  //       status: 0, // 默认状态为 0 ， 未实习
+  //     };
+  //     const insertRes = await myMongo.insert('studentList', params)
+  //     const {errcode} = insertRes;
+  //     if (errcode) {
+  //       ctx.body = {
+  //         type: 1,
+  //         msg: 'register right'
+  //       }
+  //     }
+  //   }
+  // }
+});
+
+
 app
   .use(bodyParser())
+  .use(async (ctx, next) => {
+    ctx.params = {
+      ...ctx.request.body,
+      ...ctx.query
+    };
+    await next();
+  })
   .use(router.routes())
   .use(router.allowedMethods());
 
