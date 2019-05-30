@@ -39,7 +39,7 @@ class MyMongo {
       const col = this.db.collection(colName);
       col.insertOne(value, (err, result) => {
         // this.db.close();
-        this.close();
+        // this.close();
         if (err) {
           reject({
             errcode: 0

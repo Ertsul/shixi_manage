@@ -51,7 +51,8 @@ router.post('/studentList', async (ctx, next) => {
   const dbConnectType = await myMongo.connect();
   const {type} = dbConnectType;
   if (type) {
-    const params = ctx.request.body;
+    // const params = ctx.request.body;
+    const params = ctx.params;
     const findRes = await myMongo.find('studentInfo', params);
     if (findRes) {
       ctx.body = findRes;
@@ -62,42 +63,45 @@ router.post('/studentList', async (ctx, next) => {
 
 // 注册
 router.post('/register', async (ctx, next) => {
-  console.log('---------', ctx.request.body);
-  next();
-  // const dbConnectType = await myMongo.connect();
-  // const {type} = dbConnectType;
-  // if (type) {
-  //   const params = ctx.request.body;
-  //   const {type, name, studentId, password, college, clas} = params;
-  //   const isFullInfo = name && studentId && password && college && clas; // 判断信息填写完整
-  //   // console.log('isFullInfoisFullInfo', isFullInfo, params,ctx.request, ctx.request.body);
-  //   if (!isFullInfo) {
-  //     ctx.body = {
-  //       type: 0,
-  //       msg: 'msg exit null'
-  //     };
-  //     return;
-  //   }
-  //   // 判断注册的类型：1 学生 2 辅导员 3 学生处
-  //   if (type === 1) {
-  //     const params = {
-  //       name,
-  //       studentId,
-  //       password,
-  //       college,
-  //       clas,
-  //       status: 0, // 默认状态为 0 ， 未实习
-  //     };
-  //     const insertRes = await myMongo.insert('studentList', params)
-  //     const {errcode} = insertRes;
-  //     if (errcode) {
-  //       ctx.body = {
-  //         type: 1,
-  //         msg: 'register right'
-  //       }
-  //     }
-  //   }
-  // }
+  // console.log('---------', ctx.params);
+  // next();
+  const dbConnectType = await myMongo.connect();
+  const {type} = dbConnectType;
+  if (type) {
+    // const params = ctx.request.body;
+    const params = ctx.params;
+    const {type, name = '', studentId = '', password = '', college = '', clas = ''} = params;
+    const isFullInfo = Boolean(name && studentId && password && college && clas); // 判断信息填写完整
+    // console.log('isFullInfoisFullInfo', isFullInfo, params,ctx.request, ctx.request.body);
+    console.log('isFullInfoisFullInfo', isFullInfo);
+    if (!isFullInfo) {
+      ctx.body = {
+        type: 0,
+        msg: 'msg exit null'
+      };
+      return;
+    }
+    // 判断注册的类型：1 学生 2 辅导员 3 学生处
+    // console.log('type', type);
+    if (Number(type) === 1) {
+      const params1 = {
+        name,
+        studentId,
+        password,
+        college,
+        clas,
+        status: 0, // 默认状态为 0 ， 未实习
+      };
+      const insertRes = await myMongo.insert('studentList', params1);
+      const {errcode} = insertRes;
+      if (errcode) {
+        ctx.body = {
+          type: 1,
+          msg: 'register right'
+        }
+      }
+    }
+  }
 });
 
 
@@ -109,7 +113,7 @@ app
       ...ctx.query
     };
     await next();
-  })
+  }) // 添加中间件，将请求参数 params 注册到ctx，该中间件要放在 bodyParser 之后
   .use(router.routes())
   .use(router.allowedMethods());
 
