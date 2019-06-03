@@ -1,9 +1,12 @@
 {
   "dependencies": {
+    "buffer": "^5.2.1",
+    "crypto": "^1.0.1",
     "koa": "^2.7.0",
     "koa-body-parser": "^1.1.2",
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
-    "mongodb": "^3.2.6"
+    "mongodb": "^3.2.6",
+    "sha256": "^0.2.0"
   }
 }

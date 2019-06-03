@@ -5,6 +5,14 @@ const router = require("koa-router")();
 
 const bodyParser = require("koa-bodyparser");
 
+// // 密码加密
+// const crypto = require('crypto');  //加载crypto库
+
+const sha256 = require('sha256');
+
+// 工具木块
+const util = require('./util.js');
+
 // 数据库
 const MyMongo = require('./mongo.js');
 const MongoClient = require('mongodb').MongoClient;
@@ -72,8 +80,7 @@ router.post('/register', async (ctx, next) => {
     const params = ctx.params;
     const {type, name = '', studentId = '', password = '', college = '', clas = ''} = params;
     const isFullInfo = Boolean(name && studentId && password && college && clas); // 判断信息填写完整
-    // console.log('isFullInfoisFullInfo', isFullInfo, params,ctx.request, ctx.request.body);
-    console.log('isFullInfoisFullInfo', isFullInfo);
+    // const saltRes = await myMongo.insert('studentList', params1);
     if (!isFullInfo) {
       ctx.body = {
         type: 0,
@@ -87,11 +94,12 @@ router.post('/register', async (ctx, next) => {
       const params1 = {
         name,
         studentId,
-        password,
+        // password,
         college,
         clas,
         status: 0, // 默认状态为 0 ， 未实习
       };
+      console.log('params', params);
       const insertRes = await myMongo.insert('studentList', params1);
       const {errcode} = insertRes;
       if (errcode) {
@@ -99,6 +107,20 @@ router.post('/register', async (ctx, next) => {
           type: 1,
           msg: 'register right'
         }
+      }
+      // 加盐
+      const salt = util.genRandomString(16);
+      const secret = sha256(
+        sha256(name + sha256(password + salt)) + salt + sha256(name + salt)
+      );
+      console.log('secret', secret);
+      const saltRes = await myMongo.insert('studentSalt', {
+        name,
+        salt
+      });
+      const { errcode: errcode1 } = saltRes;
+      if (errcode1) {
+        console.log('----------------------- \n 加盐成功！');
       }
     }
   }
