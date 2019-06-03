@@ -45,7 +45,6 @@ module.exports = {
    * @returns {string}
    */
   decipher(tag, ciphertext, key) {
-
     key = key || 'ErtsulErtsulErtsulErtsul';
     const nonce = crypto.randomBytes(12);
     const aad = Buffer.from('0123456789', 'hex');
