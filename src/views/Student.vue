@@ -81,7 +81,7 @@
 </template>
 
 <script>
-  import {aStudentInfo} from '../config/api.js';
+  import {aStudentInfo, aUpdateStudentInfo} from '../config/api.js';
 
   export default {
     data() {
@@ -100,6 +100,16 @@
         //   chargerPhone: '8' // 负责人电话
         // },
         formInfo: { // 实习信息
+          name: '', // 姓名
+          studentId: '', // 学号
+          myPhone: '', // 个人电话
+          companyName: '', // 公司名称
+          department: '', // 所在部门
+          charger: '', // 负责人
+          chargerPhone: '', // 负责人电话
+          address: '', // 公司地址
+        },
+        formInfo1: { // 实习信息
           name: '', // 姓名
           studentId: '', // 学号
           myPhone: '', // 个人电话
@@ -141,6 +151,7 @@
           this.formInfo = {
             name, studentId, myPhone, companyName, department, charger, chargerPhone, address
           };
+          this.formInfo1 = JSON.parse(JSON.stringify(this.formInfo))
         }
       })
     },
@@ -194,9 +205,29 @@
           });
           return;
         }
-        this.dialogVisible = false;
-        this.status = true;
-        console.log('确定更改 - ensureChangeStatus');
+        aUpdateStudentInfo([
+          this.formInfo1, // 源数据
+          {name, studentId, myPhone, companyName, address, department, charger, chargerPhone} // 更新数据
+        ]).then(res => {
+          console.error(res);
+          const {err, msg} = res.data;
+          const updateType = err == 1 && msg == '更新数据成功';
+          if (updateType) {
+            this.$message({
+              message: '更新数据成功',
+              type: 'success'
+            });
+            this.dialogClose();
+          } else {
+            this.$message({
+              message: '更新数据失败',
+              type: 'warn'
+            });
+          }
+        })
+        // this.dialogVisible = false;
+        // this.status = true;
+        // console.log('确定更改 - ensureChangeStatus');
       },
       /**
        * 取消弹框输入框内容

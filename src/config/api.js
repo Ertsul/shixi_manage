@@ -16,3 +16,5 @@ export const aLogin = params => axios.post('http://127.0.0.1:8000/api/login', {
 });
 
 export const aStudentInfo = params => axios.post('http://127.0.0.1:8000/api/studentInfo', params);
+
+export const aUpdateStudentInfo = params => axios.post('http://127.0.0.1:8000/api/update', params);

@@ -177,6 +177,7 @@ router.post('/api/update', async (ctx, next) => {
   const {type} = dbConnectType;
   if (type) {
     const params = ctx.params;
+    console.log(params);
     /**
      * params 数组
      * 0: 数据库查找值
