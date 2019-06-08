@@ -8,6 +8,7 @@
         <div class="page-header__title">学生实习就业情况统计系统</div>
         <!--  登录状态-->
         <div class="page-header__name">您好，{{name}}</div>
+        <div class="page-header__exit" @click="exitLogin">退出登录</div>
       </el-header>
       <el-container class="page-main">
         <!-- 当前状态-->
@@ -81,7 +82,7 @@
 </template>
 
 <script>
-  import {aStudentInfo, aUpdateStudentInfo} from '../config/api.js';
+  import {aStudentInfo, aUpdateStudentInfo, aInsertStudentInfo} from '../config/api.js';
 
   export default {
     data() {
@@ -132,28 +133,32 @@
       }
     },
     created() {
-      const {name, token} = JSON.parse(localStorage.getItem('userInfo'));
-      this.token = token;
-      this.name = name;
-      aStudentInfo({
-        params: {
-          name
-        }
-      }).then(res => {
-        console.error('res', res);
-        if (!res.data) {
-          this.status = 0;
-        } else {
-          this.status = 1;
-          console.log(res.data);
-          const {name, studentId, myPhone, companyName, department, charger, chargerPhone, address} = res.data[0];
-          // console.log(res.data[0], name, studentId, myPhone, companyName, department, charger, chargerPhone, address);
-          this.formInfo = {
-            name, studentId, myPhone, companyName, department, charger, chargerPhone, address
-          };
-          this.formInfo1 = JSON.parse(JSON.stringify(this.formInfo))
-        }
-      })
+      if (localStorage.getItem('userInfo')) {
+        const {data, token} = JSON.parse(localStorage.getItem('userInfo'));
+        this.token = token;
+        this.name = data.name;
+        aStudentInfo({
+          params: {
+            name:this.name
+          }
+        }).then(res => {
+          console.error('res', res);
+          if (!res.data.length) {
+            this.status = 0;
+          } else {
+            this.status = 1;
+            console.log(res.data);
+            const {name, studentId, myPhone, companyName, department, charger, chargerPhone, address} = res.data[0];
+            // console.log(res.data[0], name, studentId, myPhone, companyName, department, charger, chargerPhone, address);
+            this.formInfo = {
+              name, studentId, myPhone, companyName, department, charger, chargerPhone, address
+            };
+            this.formInfo1 = JSON.parse(JSON.stringify(this.formInfo))
+          }
+        })
+      } else {
+        this.$router.push({path: '/Login'});
+      }
     },
     computed: {
       statusTxt() {
@@ -188,6 +193,8 @@
       cancleChangeStatus() {
         if (!this.status) {
           this.resetForm();
+        } else {
+          this.formInfo = JSON.parse(JSON.stringify(this.formInfo1));
         }
         this.dialogClose();
       },
@@ -205,26 +212,33 @@
           });
           return;
         }
-        aUpdateStudentInfo([
-          this.formInfo1, // 源数据
-          {name, studentId, myPhone, companyName, address, department, charger, chargerPhone} // 更新数据
-        ]).then(res => {
-          console.error(res);
-          const {err, msg} = res.data;
-          const updateType = err == 1 && msg == '更新数据成功';
-          if (updateType) {
-            this.$message({
-              message: '更新数据成功',
-              type: 'success'
-            });
-            this.dialogClose();
-          } else {
-            this.$message({
-              message: '更新数据失败',
-              type: 'warn'
-            });
-          }
-        })
+        if (this.status) {
+          aUpdateStudentInfo([
+            this.formInfo1, // 源数据
+            {name, studentId, college: this.college, myPhone, companyName, address, department, charger, chargerPhone} // 更新数据
+          ]).then(res => {
+            console.error(res);
+            const {err, msg} = res.data;
+            const updateType = err == 1 && msg == '更新数据成功';
+            if (updateType) {
+              this.$message({
+                message: '更新数据成功',
+                type: 'success'
+              });
+              this.dialogClose();
+            } else {
+              this.$message({
+                message: '更新数据失败',
+                type: 'warn'
+              });
+            }
+          })
+        } else {
+          aInsertStudentInfo({name, studentId, myPhone, companyName, address, department, charger, chargerPhone})
+            .then(res => {
+              console.error('res', res);
+            })
+        }
         // this.dialogVisible = false;
         // this.status = true;
         // console.log('确定更改 - ensureChangeStatus');
@@ -243,6 +257,13 @@
           charger: '', // 负责人
           chargerPhone: '' // 负责人电话
         }
+      },
+      /**
+       * 退出登录
+       */
+      exitLogin() {
+        localStorage.setItem('userInfo', '');
+        this.$router.push({path: '/Login'});
       }
     }
   }
@@ -281,7 +302,12 @@
     }
 
     &__name {
+      margin-right: -54%;
       font-size: 20px;
+    }
+
+    &__exit {
+      font-size: 16px;
     }
   }
 

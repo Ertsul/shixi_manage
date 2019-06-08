@@ -11,6 +11,10 @@ export const aRegister = params => axios.post('http://127.0.0.1:8000/api/registe
   params,
 });
 
+export const atRegister = params => axios.post('http://127.0.0.1:8000/api/tRegister', {
+  params,
+});
+
 export const aLogin = params => axios.post('http://127.0.0.1:8000/api/login', {
   params,
 });
@@ -18,3 +22,5 @@ export const aLogin = params => axios.post('http://127.0.0.1:8000/api/login', {
 export const aStudentInfo = params => axios.post('http://127.0.0.1:8000/api/studentInfo', params);
 
 export const aUpdateStudentInfo = params => axios.post('http://127.0.0.1:8000/api/update', params);
+
+export const aInsertStudentInfo = params => axios.post('http://127.0.0.1:8000/api/insertInfo', params);

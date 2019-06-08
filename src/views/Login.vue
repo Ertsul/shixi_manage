@@ -12,7 +12,12 @@
         <img src="../assets/login_user.png"/>
         <!-- 登录-->
         <el-form style="width: 100%;text-align: center;" v-if="pageType === 1">
-          <el-form-item label="学号" label-width="16%">
+          <el-form-item label="">
+            <el-radio v-model="loginForm.jobType" label="1">学生</el-radio>
+            <el-radio v-model="loginForm.jobType" label="2">辅导员</el-radio>
+            <el-radio v-model="loginForm.jobType" label="3">学生处</el-radio>
+          </el-form-item>
+          <el-form-item label="学号" label-width="16%" v-if="loginForm.jobType == 1">
             <el-input v-model="loginForm.studentId" clearable></el-input>
           </el-form-item>
           <el-form-item label="姓名" label-width="16%">
@@ -21,15 +26,10 @@
           <el-form-item label="密码" label-width="16%">
             <el-input v-model="loginForm.password" type="password" clearable></el-input>
           </el-form-item>
-          <el-form-item label="">
-            <el-radio v-model="loginForm.jobType" label="1">学生</el-radio>
-            <el-radio v-model="loginForm.jobType" label="2">辅导员</el-radio>
-            <el-radio v-model="loginForm.jobType" label="3">学生处</el-radio>
-          </el-form-item>
         </el-form>
         <!-- 注册-->
         <el-form style="width: 100%;text-align: center;" v-if="pageType === 0">
-          <el-form-item label="学号" label-width="20%">
+          <el-form-item label="学号" label-width="20%" v-if="loginForm.jobType == 1">
             <el-input v-model="registerForm.studentId" clearable></el-input>
           </el-form-item>
           <el-form-item label="姓名" label-width="20%">
@@ -51,7 +51,7 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="班级" label-width="20%">
+          <el-form-item label="班级" label-width="20%" v-if="loginForm.jobType == 1">
             <el-select v-model="registerForm.class" placeholder="请选择班级" clearable>
               <el-option
                   v-for="item in classes"
@@ -71,7 +71,7 @@
 </template>
 
 <script>
-  import {aRegister, aLogin} from '../config/api.js';
+  import {aRegister, aLogin, atRegister} from '../config/api.js';
 
   export default {
     data() {
@@ -129,14 +129,14 @@
         aLogin({name, password, type: 1})
           .then(res => {
             console.log(res);
-            const {err, msg, token} = res.data;
+            const {err, msg, token, data} = res.data;
             if (err && msg && token) {
               this.$message({
                 message: '登录成功',
                 type: 'success'
               });
               localStorage.setItem('userInfo', JSON.stringify({
-                name,
+                data,
                 token
               }));
               if (jobType == 1) { // 学生登录
@@ -167,40 +167,77 @@
        */
       register() {
         console.warn('注册', this.registerForm);
-        const {name, studentId, password, college, class: clas, ensurePwd} = this.registerForm;
-        if (!(name && studentId && password && college && clas)) {
-          this.$message({
-            message: '注册信息不能为空',
-            type: 'warning'
-          });
-          return 0;
+        if (this.jobType == 1) {
+          const {name, studentId, password, college, class: clas, ensurePwd} = this.registerForm;
+          if (!(name && studentId && password && college && clas)) {
+            this.$message({
+              message: '注册信息不能为空',
+              type: 'warning'
+            });
+            return 0;
+          }
+          if (password !== ensurePwd) {
+            this.$message({
+              message: '两次输入的密码不一致',
+              type: 'warning'
+            });
+            return 0;
+          }
+          aRegister({name, studentId, password, college, clas, status: 0, type: 1})
+            .then(res => {
+              // console.error('res', res);
+              const {msg, type} = res.data;
+              if (msg === 'register right' && type === 1) {
+                this.$message({
+                  message: '注册成功',
+                  type: 'success'
+                });
+                setTimeout(() => {
+                  this.pageType = 1;
+                }, 250)
+              } else {
+                this.$message({
+                  message: '注册失败',
+                  type: 'warning'
+                });
+              }
+            })
+        } else {
+          const {name, password, college, ensurePwd} = this.registerForm;
+          if (!(name && password && college)) {
+            this.$message({
+              message: '注册信息不能为空',
+              type: 'warning'
+            });
+            return 0;
+          }
+          if (password !== ensurePwd) {
+            this.$message({
+              message: '两次输入的密码不一致',
+              type: 'warning'
+            });
+            return 0;
+          }
+          atRegister({name, password, college, type: 2})
+            .then(res => {
+              // console.error('res', res);
+              const {msg, type} = res.data;
+              if (msg === 'register right' && type === 1) {
+                this.$message({
+                  message: '注册成功',
+                  type: 'success'
+                });
+                setTimeout(() => {
+                  this.pageType = 1;
+                }, 250)
+              } else {
+                this.$message({
+                  message: '注册失败',
+                  type: 'warning'
+                });
+              }
+            })
         }
-        if (password !== ensurePwd) {
-          this.$message({
-            message: '两次输入的密码不一致',
-            type: 'warning'
-          });
-          return 0;
-        }
-        aRegister({name, studentId, password, college, clas, status: 0, type: 1})
-          .then(res => {
-            // console.error('res', res);
-            const {msg, type} = res.data;
-            if (msg === 'register right' && type === 1) {
-              this.$message({
-                message: '注册成功',
-                type: 'success'
-              });
-              setTimeout(() => {
-                this.pageType = 1;
-              }, 250)
-            } else {
-              this.$message({
-                message: '注册失败',
-                type: 'warning'
-              });
-            }
-          })
       },
       /**
        * 切换注册页面
