@@ -64,9 +64,15 @@ class MyMongo {
         col.find(params).skip((page - 1) * size).limit(size).toArray((err, res) => {
           // this.close();
           if (err) {
-            reject({});
+            reject({
+              err: 0,
+              msg: '未实习'
+            });
           } else {
-            resolve(res);
+            resolve({
+              err: 1,
+              data: res
+            });
           }
         })
       } else {

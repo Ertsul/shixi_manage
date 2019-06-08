@@ -71,6 +71,8 @@
 </template>
 
 <script>
+  import {aRegister, aLogin} from '../config/api.js';
+
   export default {
     data() {
       return {
@@ -110,14 +112,95 @@
        * 登录
        */
       login() {
-        console.warn('登录');
+        console.warn('登录', this.loginForm);
+        const {
+          name,
+          password,
+          jobType
+        } = this.loginForm;
+        const ifNull = !(name && password && jobType);
+        if (ifNull) {
+          this.$message({
+            message: '登录信息不能为空',
+            type: 'warning'
+          });
+          return 0;
+        }
+        aLogin({name, password, type: 1})
+          .then(res => {
+            console.log(res);
+            const {err, msg, token} = res.data;
+            if (err && msg && token) {
+              this.$message({
+                message: '登录成功',
+                type: 'success'
+              });
+              localStorage.setItem('userInfo', JSON.stringify({
+                name,
+                token
+              }));
+              if (jobType == 1) { // 学生登录
+                this.$router.push({path: '/Student'});
+              } else {
+                let type = 1;
+                if (jobType == 3) { // 辅导员
+                  type = 2;
+                }
+                this.$router.push({path: '/Teacher', query: type});
+              }
+            } else {
+              this.$message({
+                message: '登录失败',
+                type: 'warn'
+              });
+            }
+          })
+          .catch(_ => {
+            this.$message({
+              message: '登录失败',
+              type: 'warn'
+            });
+          })
       },
       /**
        * 注册
        */
       register() {
-        console.warn('注册');
-        this.pageType = 1;
+        console.warn('注册', this.registerForm);
+        const {name, studentId, password, college, class: clas, ensurePwd} = this.registerForm;
+        if (!(name && studentId && password && college && clas)) {
+          this.$message({
+            message: '注册信息不能为空',
+            type: 'warning'
+          });
+          return 0;
+        }
+        if (password !== ensurePwd) {
+          this.$message({
+            message: '两次输入的密码不一致',
+            type: 'warning'
+          });
+          return 0;
+        }
+        aRegister({name, studentId, password, college, clas, status: 0, type: 1})
+          .then(res => {
+            // console.error('res', res);
+            const {msg, type} = res.data;
+            if (msg === 'register right' && type === 1) {
+              this.$message({
+                message: '注册成功',
+                type: 'success'
+              });
+              setTimeout(() => {
+                this.pageType = 1;
+              }, 250)
+            } else {
+              this.$message({
+                message: '注册失败',
+                type: 'warning'
+              });
+            }
+          })
       },
       /**
        * 切换注册页面

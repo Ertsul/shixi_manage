@@ -81,6 +81,8 @@
 </template>
 
 <script>
+  import {aStudentInfo} from '../config/api.js';
+
   export default {
     data() {
       return {
@@ -118,6 +120,29 @@
           address: '公司地址', // 公司地址
         },
       }
+    },
+    created() {
+      const {name, token} = JSON.parse(localStorage.getItem('userInfo'));
+      this.token = token;
+      this.name = name;
+      aStudentInfo({
+        params: {
+          name
+        }
+      }).then(res => {
+        console.error('res', res);
+        if (!res.data) {
+          this.status = 0;
+        } else {
+          this.status = 1;
+          console.log(res.data);
+          const {name, studentId, myPhone, companyName, department, charger, chargerPhone, address} = res.data[0];
+          // console.log(res.data[0], name, studentId, myPhone, companyName, department, charger, chargerPhone, address);
+          this.formInfo = {
+            name, studentId, myPhone, companyName, department, charger, chargerPhone, address
+          };
+        }
+      })
     },
     computed: {
       statusTxt() {

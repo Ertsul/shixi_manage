@@ -40,17 +40,24 @@ router.get('/', ctx => {
 });
 
 // 学生查询
-router.post('/api/studentList', async (ctx, next) => {
+router.post('/api/studentInfo', async (ctx, next) => {
   // const payLoad = getJWTPayload(ctx.headers.authorization);
   // console.log('headers.authorization ------------- ', payLoad);
   const dbConnectType = await myMongo.connect();
   const {type} = dbConnectType;
   if (type) {
-    const params = ctx.params;
+    const params = ctx.params.params;
+    ctx.set('Access-Control-Allow-Origin', '*');
+    ctx.set('Access-Control-Allow-Methods', 'POST,GET');
+    ctx.set('Access-Control-Allow-Headers', 'x-requested-with,Authorization,Content-Type');
     const findRes = await myMongo.find('studentInfo', params);
     if (findRes) {
       ctx.body = findRes;
-      next();
+    } else {
+      ctx.body = {
+        err: 0,
+        msg: '未实习'
+      }
     }
   }
 });
@@ -63,7 +70,8 @@ router.post('/api/register', async (ctx, next) => {
   const {type} = dbConnectType;
   if (type) {
     const params = ctx.params;
-    const {type, name = '', studentId = '', password = '', college = '', clas = ''} = params;
+    console.log('register', params.params);
+    const {type, name = '', studentId = '', password = '', college = '', clas = ''} = params.params;
     const isFullInfo = Boolean(name && studentId && password && college && clas); // 判断信息填写完整
     if (!isFullInfo) {
       ctx.body = {
@@ -74,6 +82,7 @@ router.post('/api/register', async (ctx, next) => {
     }
     // 判断注册的类型：1 学生 2 辅导员 3 学生处
     if (Number(type) === 1) {
+      console.log('---------------');
       const params1 = {
         name,
         studentId,
@@ -112,7 +121,9 @@ router.post('/api/register', async (ctx, next) => {
 // 登录
 router.post('/api/login', async (ctx, next) => {
   const params = ctx.params;
-  const {name, password, type} = params;
+  console.log(ctx.params);
+
+  const {name, password, type} = params.params;
   const ifNull = !(name && password && type);
   if (ifNull) {
     ctx.body = {
@@ -129,6 +140,9 @@ router.post('/api/login', async (ctx, next) => {
       name: name
     });
     console.log('typetype', dbType, findRes, password);
+    ctx.set('Access-Control-Allow-Origin', '*');
+    ctx.set('Access-Control-Allow-Methods', 'POST,GET');
+    ctx.set('Access-Control-Allow-Headers', 'x-requested-with,Authorization,Content-Type');
     if (findRes) {
       const {password: dbPwd} = findRes[0]; // 查询数据库
       if (String(dbPwd) == String(password)) {
