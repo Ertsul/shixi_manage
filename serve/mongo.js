@@ -81,6 +81,27 @@ class MyMongo {
       }
     })
   }
+
+  // 更新数据库
+  async update(colName, params, updateParams) {
+    return new Promise((resolve, reject) => {
+      const col = this.db.collection(colName);
+      // console.log('col', col);
+      col.updateOne(params, {$set: updateParams}, (err, result) => {
+        if (err) {
+          reject({
+            err: 0,
+            msg: '更新数据失败'
+          });
+        } else {
+          resolve({
+            err: 1,
+            msg: '更新数据成功'
+          });
+        }
+      })
+    })
+  }
 }
 
 module.exports = MyMongo;

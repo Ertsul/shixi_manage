@@ -78,5 +78,8 @@ module.exports = {
     return crypto.randomBytes(Math.ceil(length / 2))
       .toString('hex') /**转成十六进制*/
       .slice(0, length);/**返回指定长度字符串*/
+  },
+  getJWTPayload(token) {
+    return jwt.verify(token.split(' ')[1], 'secret');
   }
 };

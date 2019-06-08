@@ -1,26 +1,27 @@
 const Koa = require('koa');
 const app = new Koa();
-
+// 路由
 const router = require("koa-router")();
-
+// 获取请求参数
 const bodyParser = require("koa-bodyparser");
-
 // // 密码加密
 // const crypto = require('crypto');  //加载crypto库
-
 const sha256 = require('sha256');
-
-// 工具木块
+// 登录认证
+const jwt = require('koa-jwt');
+const jsonwebtoken = require('jsonwebtoken');
+// 工具模块
 const util = require('./util.js');
-
 // 数据库
 const MyMongo = require('./mongo.js');
 const MongoClient = require('mongodb').MongoClient;
 const dbHost = "mongodb://134.175.150.88:27018";
 const dbName = "sxmanager";
 const myMongo = new MyMongo(MongoClient, dbHost, dbName);
+// 跨域设置
+cors = require('koa-cors');
 
-
+// 根目录
 router.get('/', ctx => {
   ctx.cookies.set(
     'cid',
@@ -39,7 +40,9 @@ router.get('/', ctx => {
 });
 
 // 学生查询
-router.post('/studentList', async (ctx, next) => {
+router.post('/api/studentList', async (ctx, next) => {
+  // const payLoad = getJWTPayload(ctx.headers.authorization);
+  // console.log('headers.authorization ------------- ', payLoad);
   const dbConnectType = await myMongo.connect();
   const {type} = dbConnectType;
   if (type) {
@@ -52,8 +55,10 @@ router.post('/studentList', async (ctx, next) => {
   }
 });
 
+// token 测试：eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoiMTIzIiwiZXhwIjoxNTYwMDA2MDY0LCJpYXQiOjE1NjAwMDI0NjR9.cXWI2H5LZyoVC7-I0inA6bU5wFY8EZ0w8WOi1hB_oZE
+
 // 注册
-router.post('/register', async (ctx, next) => {
+router.post('/api/register', async (ctx, next) => {
   const dbConnectType = await myMongo.connect();
   const {type} = dbConnectType;
   if (type) {
@@ -72,7 +77,7 @@ router.post('/register', async (ctx, next) => {
       const params1 = {
         name,
         studentId,
-        // password,
+        password,
         college,
         clas,
         status: 0, // 默认状态为 0 ， 未实习
@@ -104,8 +109,77 @@ router.post('/register', async (ctx, next) => {
   }
 });
 
+// 登录
+router.post('/api/login', async (ctx, next) => {
+  const params = ctx.params;
+  const {name, password, type} = params;
+  const ifNull = !(name && password && type);
+  if (ifNull) {
+    ctx.body = {
+      err: 0,
+      msg: '登录数据不全'
+    };
+    return 0;
+  }
+  // 数据库
+  const dbConnectType = await myMongo.connect();
+  const {type: dbType} = dbConnectType;
+  if (dbType) {
+    const findRes = await myMongo.find('studentList', {
+      name: name
+    });
+    console.log('typetype', dbType, findRes, password);
+    if (findRes) {
+      const {password: dbPwd} = findRes[0]; // 查询数据库
+      if (String(dbPwd) == String(password)) {
+        ctx.body = {
+          err: 1,
+          msg: '登录成功',
+          // 生成 token 返回给客户端
+          token: jsonwebtoken.sign({
+            data: name,
+            // 设置 token 过期时间
+            exp: Math.floor(Date.now() / 1000) + (60 * 60), // 60 seconds * 60 minutes = 1 hour， 登录一个小时后token失效
+          }, 'secret'),
+        }
+      } else {
+        ctx.body = {
+          err: 0,
+          msg: '密码错误'
+        }
+      }
+    } else {
+      ctx.body = {
+        err: 0,
+        msg: '查无此人'
+      }
+    }
+  }
+});
+
+// 更新
+router.post('/api/update', async (ctx, next) => {
+  const dbConnectType = await myMongo.connect();
+  const {type} = dbConnectType;
+  if (type) {
+    const params = ctx.params;
+    /**
+     * params 数组
+     * 0: 数据库查找值
+     * 1: 数据库更新值
+     */
+    const updateRes = await myMongo.update('studentInfo', params[0], params[1]);
+    console.log('---------', updateRes);
+    if (updateRes.err == 1) {
+      ctx.body = updateRes
+    } else {
+      ctx.body = updateRes
+    }
+  }
+});
 
 app
+  .use(cors())
   .use(bodyParser())
   .use(async (ctx, next) => {
     ctx.params = {
@@ -114,6 +188,15 @@ app
     };
     await next();
   }) // 添加中间件，将请求参数 params 注册到ctx，该中间件要放在 bodyParser 之后
+  // token 认证中间件
+  .use(jwt({secret: 'secret'}).unless({
+      path: [
+        /^\/api\/login/,
+        /^\/api\/register/,
+        /^((?!\/api).)*$/
+      ]
+    }
+  ))
   .use(router.routes())
   .use(router.allowedMethods());
 
