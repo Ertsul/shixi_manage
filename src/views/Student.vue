@@ -229,6 +229,7 @@
                 message: '更新数据成功',
                 type: 'success'
               });
+              this.status = 1;
               this.dialogClose();
             } else {
               this.$message({
