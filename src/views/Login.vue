@@ -41,7 +41,7 @@
           <el-form-item label="确认密码" label-width="20%">
             <el-input v-model="registerForm.ensurePwd" type="password" clearable></el-input>
           </el-form-item>
-          <el-form-item label="院系" label-width="20%">
+          <el-form-item label="院系" label-width="20%" v-if="loginForm.jobType != 3">
             <el-select v-model="registerForm.college" placeholder="请选择院系" clearable>
               <el-option
                   v-for="item in colleges"
@@ -71,7 +71,7 @@
 </template>
 
 <script>
-  import {aRegister, aLogin, atRegister} from '../config/api.js';
+  import {aRegister, aLogin, atRegister, atLogin} from '../config/api.js';
 
   export default {
     data() {
@@ -107,6 +107,9 @@
         }],
       }
     },
+    created() {
+      localStorage.clear();
+    },
     methods: {
       /**
        * 登录
@@ -126,48 +129,76 @@
           });
           return 0;
         }
-        aLogin({name, password, type: 1})
-          .then(res => {
-            console.log(res);
-            const {err, msg, token, data} = res.data;
-            if (err && msg && token) {
-              this.$message({
-                message: '登录成功',
-                type: 'success'
-              });
-              localStorage.setItem('userInfo', JSON.stringify({
-                data,
-                token
-              }));
-              if (jobType == 1) { // 学生登录
+        if (jobType == 1) { // 学生登录
+          aLogin({name, password, type: 1})
+            .then(res => {
+              console.log(res);
+              const {err, msg, token, data} = res.data;
+              if (err && msg && token) {
+                this.$message({
+                  message: '登录成功',
+                  type: 'success'
+                });
+                localStorage.setItem('userInfo', JSON.stringify({
+                  data,
+                  token
+                }));
                 this.$router.push({path: '/Student'});
               } else {
+                this.$message({
+                  message: '登录失败',
+                  type: 'warn'
+                });
+              }
+            })
+            .catch(_ => {
+              this.$message({
+                message: '登录失败',
+                type: 'warn'
+              });
+            });
+        } else {
+          atLogin({name, password, type: 1})
+            .then(res => {
+              console.log(res);
+              let {err, msg, token, data} = res.data;
+              if (err && msg && token) {
+                this.$message({
+                  message: '登录成功',
+                  type: 'success'
+                });
+                delete data.password;
+                localStorage.setItem('userInfo', JSON.stringify({
+                  data,
+                  token
+                }));
                 let type = 1;
                 if (jobType == 3) { // 辅导员
                   type = 2;
                 }
                 this.$router.push({path: '/Teacher', query: type});
+              } else {
+                this.$message({
+                  message: '登录失败',
+                  type: 'warn'
+                });
               }
-            } else {
+            })
+            .catch(_ => {
               this.$message({
                 message: '登录失败',
                 type: 'warn'
               });
-            }
-          })
-          .catch(_ => {
-            this.$message({
-              message: '登录失败',
-              type: 'warn'
             });
-          })
+
+        }
       },
       /**
        * 注册
        */
       register() {
-        console.warn('注册', this.registerForm);
-        if (this.jobType == 1) {
+        console.warn('注册', this.registerForm, this.loginForm.jobType);
+        if (this.loginForm.jobType == 1) {
           const {name, studentId, password, college, class: clas, ensurePwd} = this.registerForm;
           if (!(name && studentId && password && college && clas)) {
             this.$message({
@@ -183,6 +214,7 @@
             });
             return 0;
           }
+          console.warn('学生注册');
           aRegister({name, studentId, password, college, clas, status: 0, type: 1})
             .then(res => {
               // console.error('res', res);
@@ -203,22 +235,44 @@
               }
             })
         } else {
-          const {name, password, college, ensurePwd} = this.registerForm;
-          if (!(name && password && college)) {
-            this.$message({
-              message: '注册信息不能为空',
-              type: 'warning'
-            });
-            return 0;
+          let params = {};
+          console.warn('教师注册', this.registerForm);
+          if (this.loginForm.jobType == 2) { // 辅导员注册
+            const {name, password, college, ensurePwd} = this.registerForm;
+            if (!(name && password && college)) {
+              this.$message({
+                message: '注册信息不能为空',
+                type: 'warning'
+              });
+              return 0;
+            }
+            if (password !== ensurePwd) {
+              this.$message({
+                message: '两次输入的密码不一致',
+                type: 'warning'
+              });
+              return 0;
+            }
+            params = {name, password, college, type: 2};
+          } else if (this.loginForm.jobType == 3) {
+            const {name, password, ensurePwd} = this.registerForm;
+            if (!(name && password)) {
+              this.$message({
+                message: '注册信息不能为空',
+                type: 'warning'
+              });
+              return 0;
+            }
+            if (password !== ensurePwd) {
+              this.$message({
+                message: '两次输入的密码不一致',
+                type: 'warning'
+              });
+              return 0;
+            }
+            params = {name, password, type: 3};
           }
-          if (password !== ensurePwd) {
-            this.$message({
-              message: '两次输入的密码不一致',
-              type: 'warning'
-            });
-            return 0;
-          }
-          atRegister({name, password, college, type: 2})
+          atRegister(params)
             .then(res => {
               // console.error('res', res);
               const {msg, type} = res.data;

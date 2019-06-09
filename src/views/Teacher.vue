@@ -6,12 +6,14 @@
         <!--  标题-->
         <div class="page-header__title">学生实习就业情况统计系统</div>
         <!--  登录状态-->
-        <div class="page-header__name">您好，{{name}}</div>
+        <div class="page-header__name">您好，{{userInfo.name}}</div>
+        <div class="page-header__exit" @click="exitLogin">退出登录</div>
       </el-header>
       <el-container class="page-main">
         <!--  搜索区域-->
         <div class="search-wrap">
-          <el-select v-if="jobType == 2" style="margin-right: 10px;" v-model="searchForm.college" placeholder="请选择院系" clearable>
+          <el-select v-if="jobType == 2" style="margin-right: 10px;" v-model="searchForm.college" placeholder="请选择院系"
+                     clearable>
             <el-option
                 v-for="item in colleges"
                 :key="item.value"
@@ -29,18 +31,64 @@
           </el-select>
           <el-input style="margin-right: 10px;" class="search-wrap__input" placeholder="输入姓名..."
                     v-model="searchForm.name" clearable></el-input>
-          <el-button type="primary" size="small" style="height: 36px;">搜索</el-button>
+          <el-button type="primary" size="small" style="height: 36px;" @click="search">搜索</el-button>
         </div>
       </el-container>
+      <el-table
+          :data="searchResult"
+          style="width: 90%; margin: 20px auto;">
+        <el-table-column
+            prop="name"
+            label="姓名"
+            width="180">
+        </el-table-column>
+        <el-table-column
+            prop="studentId"
+            label="学号"
+            width="180">
+        </el-table-column>
+        <el-table-column
+            prop="myPhone"
+            label="个人电话"
+            width="180">
+        </el-table-column>
+        <el-table-column
+            prop="companyName"
+            label="公司名称"
+            width="180">
+        </el-table-column>
+        <el-table-column
+            prop="department"
+            label="部门"
+            width="180">
+        </el-table-column>
+        <el-table-column
+            prop="charger"
+            label="负责人"
+            width="180">
+        </el-table-column>
+        <el-table-column
+            prop="chargerPhone"
+            label="负责人电话"
+            width="180">
+        </el-table-column>
+        <el-table-column
+            prop="address"
+            label="地址">
+        </el-table-column>
+      </el-table>
     </el-container>
   </div>
 </template>
 
 <script>
+
+  import {aStudentInfo} from '../config/api.js';
+
   export default {
     data() {
       return {
-        name: 'Ertsul', // 用户名
+        name: '', // 用户名
         jobType: '2', // 职位类型： 0： 学生； 1： 辅导员； 2： 学生处
         colleges: [{ // 院系
           value: 'it',
@@ -61,6 +109,10 @@
           college: '',
           class: ''
         },
+        userInfo: {
+          name: '',
+          college: ''
+        },
         searchResult: [ // 搜索结果
           // {
           //   name: '姓名', // 姓名
@@ -71,89 +123,47 @@
           //   charger: '负责人', // 负责人
           //   chargerPhone: '负责人电话', // 负责人电话
           //   address: '公司地址', // 公司地址 }
-          {
-            name: '姓名1', // 姓名
-            studentId: '学号1', // 学号
-            myPhone: '个人电话1', // 个人电话
-            companyName: '公司名称1', // 公司名称
-            department: '所在部门1', // 所在部门
-            charger: '负责人1', // 负责人
-            chargerPhone: '负责人电话1', // 负责人电话
-            address: '公司地址1', // 公司地址
-          },
-          {
-            name: '姓名1', // 姓名
-            studentId: '学号1', // 学号
-            myPhone: '个人电话1', // 个人电话
-            companyName: '公司名称1', // 公司名称
-            department: '所在部门1', // 所在部门
-            charger: '负责人1', // 负责人
-            chargerPhone: '负责人电话1', // 负责人电话
-            address: '公司地址1', // 公司地址
-          },
-          {
-            name: '姓名1', // 姓名
-            studentId: '学号1', // 学号
-            myPhone: '个人电话1', // 个人电话
-            companyName: '公司名称1', // 公司名称
-            department: '所在部门1', // 所在部门
-            charger: '负责人1', // 负责人
-            chargerPhone: '负责人电话1', // 负责人电话
-            address: '公司地址1', // 公司地址
-          },
-          {
-            name: '姓名1', // 姓名
-            studentId: '学号1', // 学号
-            myPhone: '个人电话1', // 个人电话
-            companyName: '公司名称1', // 公司名称
-            department: '所在部门1', // 所在部门
-            charger: '负责人1', // 负责人
-            chargerPhone: '负责人电话1', // 负责人电话
-            address: '公司地址1', // 公司地址
-          },
-          {
-            name: '姓名1', // 姓名
-            studentId: '学号1', // 学号
-            myPhone: '个人电话1', // 个人电话
-            companyName: '公司名称1', // 公司名称
-            department: '所在部门1', // 所在部门
-            charger: '负责人1', // 负责人
-            chargerPhone: '负责人电话1', // 负责人电话
-            address: '公司地址1', // 公司地址
-          },
-          {
-            name: '姓名1', // 姓名
-            studentId: '学号1', // 学号
-            myPhone: '个人电话1', // 个人电话
-            companyName: '公司名称1', // 公司名称
-            department: '所在部门1', // 所在部门
-            charger: '负责人1', // 负责人
-            chargerPhone: '负责人电话1', // 负责人电话
-            address: '公司地址1', // 公司地址
-          },
-          {
-            name: '姓名1', // 姓名
-            studentId: '学号1', // 学号
-            myPhone: '个人电话1', // 个人电话
-            companyName: '公司名称1', // 公司名称
-            department: '所在部门1', // 所在部门
-            charger: '负责人1', // 负责人
-            chargerPhone: '负责人电话1', // 负责人电话
-            address: '公司地址1', // 公司地址
-          },
-          {
-            name: '姓名1', // 姓名
-            studentId: '学号1', // 学号
-            myPhone: '个人电话1', // 个人电话
-            companyName: '公司名称1', // 公司名称
-            department: '所在部门1', // 所在部门
-            charger: '负责人1', // 负责人
-            chargerPhone: '负责人电话1', // 负责人电话
-            address: '公司地址1', // 公司地址
-          },
         ]
       }
-    }
+    },
+    created() {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo')).data;
+      console.error('teacher page', userInfo);
+      this.userInfo = userInfo;
+      if (userInfo.college) {
+        this.jobType = 1;
+        this.searchForm.college = userInfo.college;
+      } else {
+        this.jobType = 2;
+      }
+      this.search();
+    },
+    methods: {
+      search() {
+        const {name, class: clas, college} = this.searchForm;
+        console.warn('search', name, this.searchForm);
+        let params = {};
+        if (name) {
+          params.name = name;
+        }
+        if (clas) {
+          params.clas = clas;
+        }
+        if (college) {
+          params.college = college;
+        }
+        aStudentInfo({
+          params
+        }).then(res => {
+          this.searchResult = res.data;
+          console.error('res', res, this.searchResult);
+        })
+      },
+      exitLogin() {
+        localStorage.setItem('userInfo', '');
+        this.$router.push({path: '/Login'});
+      }
+    },
   }
 </script>
 
@@ -183,7 +193,12 @@
     }
 
     &__name {
+      margin-right: -54%;
       font-size: 20px;
+    }
+
+    &__exit {
+      font-size: 16px;
     }
   }
 

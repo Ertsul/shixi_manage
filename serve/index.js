@@ -69,7 +69,7 @@ router.post('/api/insertInfo', async (ctx, next) => {
   if (type) {
     const params = ctx.params;
     console.log('insertInfo', params);
-    const {name = '', college = '', studentId = '', myPhone = '', companyName = '', department = '', charger = '', chargerPhone = '', address = ''} = params;
+    const {name = '', college = '', clas = '', studentId = '', myPhone = '', companyName = '', department = '', charger = '', chargerPhone = '', address = ''} = params;
     const isFullInfo = Boolean(name && studentId && college && myPhone && companyName && department && charger && chargerPhone && address); // 判断信息填写完整
     ctx.set('Access-Control-Allow-Origin', '*');
     ctx.set('Access-Control-Allow-Methods', 'POST,GET');
@@ -156,8 +156,8 @@ router.post('/api/tRegister', async (ctx, next) => {
   if (type) {
     const params = ctx.params;
     console.log('register', params.params);
-    const {type, name = '',  password = '', college = ''} = params.params;
-    const isFullInfo = Boolean(name && password && college); // 判断信息填写完整
+    const {type, name = '', password = '', college = ''} = params.params;
+    const isFullInfo = Boolean(name && password); // 判断信息填写完整
     if (!isFullInfo) {
       ctx.body = {
         type: 0,
@@ -176,6 +176,9 @@ router.post('/api/tRegister', async (ctx, next) => {
       const insertRes = await myMongo.insert('teacherList', params1);
       const {errcode} = insertRes;
       console.log(errcode, errcode);
+      ctx.set('Access-Control-Allow-Origin', '*');
+      ctx.set('Access-Control-Allow-Methods', 'POST,GET');
+      ctx.set('Access-Control-Allow-Headers', 'x-requested-with,Authorization,Content-Type');
       if (errcode) {
         ctx.body = {
           type: 1,
@@ -196,6 +199,24 @@ router.post('/api/tRegister', async (ctx, next) => {
       // if (errcode1) {
       //   console.log('----------------------- \n 加盐成功！');
       // }
+    }
+    if (Number(type) === 3) {
+      const params2 = {
+        name,
+        password,
+      };
+      const insertRes = await myMongo.insert('teacherList', params2);
+      const {errcode} = insertRes;
+      console.log(errcode, errcode);
+      ctx.set('Access-Control-Allow-Origin', '*');
+      ctx.set('Access-Control-Allow-Methods', 'POST,GET');
+      ctx.set('Access-Control-Allow-Headers', 'x-requested-with,Authorization,Content-Type');
+      if (errcode) {
+        ctx.body = {
+          type: 1,
+          msg: 'register right'
+        }
+      }
     }
   }
 });
@@ -219,6 +240,60 @@ router.post('/api/login', async (ctx, next) => {
   const {type: dbType} = dbConnectType;
   if (dbType) {
     const findRes = await myMongo.find('studentList', {
+      name: name
+    });
+    console.log('typetype', dbType, findRes, password);
+    ctx.set('Access-Control-Allow-Origin', '*');
+    ctx.set('Access-Control-Allow-Methods', 'POST,GET');
+    ctx.set('Access-Control-Allow-Headers', 'x-requested-with,Authorization,Content-Type');
+    if (findRes) {
+      console.log('findRes', findRes);
+      const {password: dbPwd} = findRes[0]; // 查询数据库
+      if (String(dbPwd) == String(password)) {
+        ctx.body = {
+          err: 1,
+          msg: '登录成功',
+          data: findRes[0],
+          // 生成 token 返回给客户端
+          token: jsonwebtoken.sign({
+            data: name,
+            // 设置 token 过期时间
+            exp: Math.floor(Date.now() / 1000) + (60 * 60), // 60 seconds * 60 minutes = 1 hour， 登录一个小时后token失效
+          }, 'secret')
+        }
+      } else {
+        ctx.body = {
+          err: 0,
+          msg: '密码错误'
+        }
+      }
+    } else {
+      ctx.body = {
+        err: 0,
+        msg: '查无此人'
+      }
+    }
+  }
+});
+
+router.post('/api/tLogin', async (ctx, next) => {
+  const params = ctx.params;
+  console.log(ctx.params);
+
+  const {name, password, type} = params.params;
+  const ifNull = !(name && password && type);
+  if (ifNull) {
+    ctx.body = {
+      err: 0,
+      msg: '登录数据不全'
+    };
+    return 0;
+  }
+  // 数据库
+  const dbConnectType = await myMongo.connect();
+  const {type: dbType} = dbConnectType;
+  if (dbType) {
+    const findRes = await myMongo.find('teacherList', {
       name: name
     });
     console.log('typetype', dbType, findRes, password);
@@ -291,7 +366,9 @@ app
   .use(jwt({secret: 'secret'}).unless({
       path: [
         /^\/api\/login/,
+        /^\/api\/tLogin/,
         /^\/api\/register/,
+        /^\/api\/tRegister/,
         /^((?!\/api).)*$/
       ]
     }

@@ -137,6 +137,8 @@
         const {data, token} = JSON.parse(localStorage.getItem('userInfo'));
         this.token = token;
         this.name = data.name;
+        this.college = data.college;
+        this.clas = data.clas;
         aStudentInfo({
           params: {
             name:this.name
@@ -202,7 +204,7 @@
        * 确定弹框输入框内容，更改当前状态
        */
       ensureChangeStatus() {
-        const {name, studentId, myPhone, companyName, address, department, charger, chargerPhone} = this.formInfo;
+        const {name, studentId, myPhone, companyName,  address, department, charger, chargerPhone} = this.formInfo;
         const notAllWrite = !(name && studentId && myPhone && companyName && address && department && charger && chargerPhone); // 信息没有全部填写
         if (notAllWrite) {
           this.$message({
@@ -212,10 +214,12 @@
           });
           return;
         }
+        // this.formInfo.college =this.formInfo1.college;
+        // this.formInfo.clas =this.formInfo1.clas;
         if (this.status) {
           aUpdateStudentInfo([
             this.formInfo1, // 源数据
-            {name, studentId, college: this.college, myPhone, companyName, address, department, charger, chargerPhone} // 更新数据
+            {name, studentId, college: this.college, clas:this.clas, myPhone, companyName, address, department, charger, chargerPhone} // 更新数据
           ]).then(res => {
             console.error(res);
             const {err, msg} = res.data;
@@ -234,9 +238,10 @@
             }
           })
         } else {
-          aInsertStudentInfo({name, studentId, myPhone, companyName, address, department, charger, chargerPhone})
+          aInsertStudentInfo({name, studentId, myPhone, clas: this.clas, college: this.college, companyName, address, department, charger, chargerPhone})
             .then(res => {
               console.error('res', res);
+              this.dialogClose();
             })
         }
         // this.dialogVisible = false;
